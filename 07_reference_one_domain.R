@@ -29,7 +29,7 @@
 suppressPackageStartupMessages({ library(lavaan); library(dplyr) })
 options(stringsAsFactors = FALSE)
 BASE <- "."  # the repository root; run every script from there
-setwd(BASE)
+setwd(BASE); source("round_half_up.R")  # round() and signif() round half up from here on (see that file)
 
 d  <- readRDS("values_analysis.rds")
 LC <- readRDS("lca_models.rds")
@@ -420,9 +420,9 @@ dist_out <- data.frame(
   quantity = c("Disturbance of the resource-oriented factor, estimated freely",
                "Standard error", "p",
                "Largest change in a standardised breadth coefficient when the disturbance is fixed at zero"),
-  value = c(sprintf("%.3f", pf$est), sprintf("%.3f", pf$se),
-            sprintf("%.3f", pf$pvalue),
-            sprintf("%.4f", max(abs(sf$est.std - sr$est.std)))))
+  value = c(sprintf("%.3f", round(pf$est, 3)), sprintf("%.3f", round(pf$se, 3)),
+            sprintf("%.3f", round(pf$pvalue, 3)),
+            sprintf("%.4f", round(max(abs(sf$est.std - sr$est.std)), 4))))
 write.csv(dist_out, "outputs/table30_disturbance.csv", row.names = FALSE,
           fileEncoding = "UTF-8")
 print(dist_out, row.names = FALSE)

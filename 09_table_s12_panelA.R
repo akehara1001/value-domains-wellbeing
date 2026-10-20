@@ -24,6 +24,7 @@
 # =============================================================================
 BASE <- "."  # the repository root; run every script from there
 setwd(BASE)
+source("round_half_up.R")  # round() and signif() round half up from here on (see that file)
 
 src <- readLines("07_reference_one_domain.R", encoding = "UTF-8")
 eval(parse(text = paste(src[1:97], collapse = "\n")), envir = globalenv())
@@ -95,11 +96,11 @@ stopifnot(!any(is.na(a$est[ORD != "k6_z"])), !any(is.na(b$est)))
 stopifnot(is.na(a$est[ORD == "k6_z"]))
 
 fmt_b  <- function(e, l, u) ifelse(is.na(e), "n/a",
-  sprintf("%.3f [%.3f, %.3f]", e, l, u))
-fmt_sd <- function(x) ifelse(is.na(x), "n/a", sprintf("%.3f", x))
+  sprintf("%.3f [%.3f, %.3f]", round(e, 3), round(l, 3), round(u, 3)))
+fmt_sd <- function(x) ifelse(is.na(x), "n/a", sprintf("%.3f", round(x, 3)))
 # p is reported as the manuscript reports it: three decimals, or < 0.001.
 fmt_p  <- function(p) ifelse(is.na(p), "n/a",
-  ifelse(p < 0.0005, "<0.001", sprintf("%.3f", p)))
+  ifelse(p < 0.0005, "<0.001", sprintf("%.3f", round(p, 3))))
 
 out <- data.frame(
   predictor          = unname(LAB[ORD]),
@@ -110,7 +111,7 @@ out <- data.frame(
   std_with           = fmt_sd(b$std.all),
   p_with             = fmt_p(b$pvalue),
   change_in_std      = ifelse(is.na(a$std.all) | is.na(b$std.all), "n/a",
-                              sprintf("%.3f", b$std.all - a$std.all)),
+                              sprintf("%.3f", round(b$std.all - a$std.all, 3))),
   lavaan_rhs_raw     = ORD,
   stringsAsFactors   = FALSE)
 

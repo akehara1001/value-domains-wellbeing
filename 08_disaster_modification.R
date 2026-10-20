@@ -35,6 +35,7 @@ suppressPackageStartupMessages({ library(lavaan) })
 options(stringsAsFactors = FALSE)
 BASE <- "."  # the repository root; run every script from there
 setwd(BASE)
+source("round_half_up.R")  # round() and signif() round half up from here on (see that file)
 
 d  <- readRDS("values_analysis.rds")
 LC <- readRDS("lca_models.rds")

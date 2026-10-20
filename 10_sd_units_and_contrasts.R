@@ -56,6 +56,7 @@ suppressPackageStartupMessages({ library(lavaan) })
 options(stringsAsFactors = FALSE)
 BASE <- "."  # the repository root; run every script from there
 setwd(BASE)
+source("round_half_up.R")  # round() and signif() round half up from here on (see that file)
 
 # ------------------------------------------------------------ evaluation
 # Evaluate lines of a delivered script in an environment of their own, so the
@@ -261,7 +262,7 @@ cat(sprintf("largest relative difference from the primary SD: %.4f\n",
 
 # -------------------------------------------------------- 2. SD units
 f3 <- function(x) {
-  s <- sprintf("%.3f", x)
+  s <- sprintf("%.3f", round(x, 3))
   ifelse(s == "-0.000", "0.000", s)
 }
 cell3 <- function(e, l, u) sprintf("%s [%s, %s]", f3(e), f3(l), f3(u))

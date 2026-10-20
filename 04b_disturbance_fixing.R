@@ -7,6 +7,7 @@
 #
 #   Rscript 04b_disturbance_fixing.R
 
+source("round_half_up.R")  # round() and signif() round half up from here on (see that file)
 suppressMessages(library(lavaan))
 f <- readRDS("structural_fits.rds")
 

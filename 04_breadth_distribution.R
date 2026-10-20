@@ -7,6 +7,7 @@
 #
 #   Rscript 04_breadth_distribution.R
 
+source("round_half_up.R")  # round() and signif() round half up from here on (see that file)
 d <- readRDS("values_analysis.rds")
 stopifnot(nrow(d) == 2179, !any(is.na(d$nsup)))
 

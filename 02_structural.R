@@ -57,6 +57,7 @@ options(stringsAsFactors = FALSE)
 
 BASE <- "."  # the repository root; run every script from there
 setwd(BASE)
+source("round_half_up.R")  # round() and signif() round half up from here on (see that file)
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1 || is.na(suppressWarnings(as.integer(args[1])))) {
@@ -139,8 +140,8 @@ vif_pub <- function(fit) {
 }
 
 fmt_ci <- function(est, lo, hi, dp = 3)
-  sprintf("%.*f [%.*f, %.*f]", dp, est, dp, lo, dp, hi)
-fmt_p <- function(p) ifelse(is.na(p), "—", ifelse(p < 0.001, "<0.001", sprintf("%.3f", p)))
+  sprintf("%.*f [%.*f, %.*f]", dp, round(est, dp), dp, round(lo, dp), dp, round(hi, dp))
+fmt_p <- function(p) ifelse(is.na(p), "—", ifelse(p < 0.001, "<0.001", sprintf("%.3f", round(p, 3))))
 
 struct_rows <- function(fit, group = NULL, lhs = "WB") {
   pe <- parameterEstimates(fit, standardized = TRUE, ci = TRUE)
@@ -699,8 +700,8 @@ cells5_fc  <- table(m5$predclass, d$fcancer2)
 # =============================================================================
 # Table 1 -- background by value class
 # =============================================================================
-pct <- function(x, lv) sprintf("%d (%.1f)", sum(x == lv), 100 * mean(x == lv))
-msd <- function(x) sprintf("%.1f (%.1f)", mean(x), sd(x))
+pct <- function(x, lv) sprintf("%d (%.1f)", sum(x == lv), round(100 * mean(x == lv), 1))
+msd <- function(x) sprintf("%.1f (%.1f)", round(mean(x), 1), round(sd(x), 1))
 t1_rows <- list()
 add1 <- function(var, fn) {
   t1_rows[[length(t1_rows) + 1]] <<- data.frame(
