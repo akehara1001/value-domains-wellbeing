@@ -8,7 +8,11 @@
 #   output  outputs/results_phase3.md
 #           outputs/phase3_by_domain.csv
 #           outputs/phase3_by_class.csv
-#           outputs/phase3_by_famcare.csv
+#           outputs/phase3_by_famcare.csv   (only when sf is present)
+#
+# The FAMCARE-10 score sf exists only in the dataset built by 00_derive.R from
+# the raw export. The released data do not carry it, so with 00_load_release.R
+# the FAMCARE tabulation is skipped; no article table uses it.
 #
 # Sample: the 855 respondents with a family cancer history, and within them only
 # the domains each respondent endorsed (Q11_7..Q11_9 are routed on both).
@@ -42,10 +46,15 @@ d$vclass <- factor(m$predclass, levels = seq_len(K))
 # FAMCARE tertiles, cut exactly as in paper 1 (quantile breaks on the observed
 # sf, include.lowest). Paper 1 reports 297 / 413 / 145; the bands are uneven
 # because sf is a discrete sum.
-d$sf_cat <- cut(d$sf, breaks = quantile(d$sf, c(0, 1/3, 2/3, 1), na.rm = TRUE),
-                include.lowest = TRUE, labels = c("low", "mid", "high"))
-tt <- table(d$sf_cat)
-stopifnot(as.integer(tt) == c(297, 413, 145))
+HAS_SF <- "sf" %in% names(d)
+if (HAS_SF) {
+  d$sf_cat <- cut(d$sf, breaks = quantile(d$sf, c(0, 1/3, 2/3, 1), na.rm = TRUE),
+                  include.lowest = TRUE, labels = c("low", "mid", "high"))
+  tt <- table(d$sf_cat)
+  stopifnot(as.integer(tt) == c(297, 413, 145))
+} else {
+  d$sf_cat <- factor(NA, levels = c("low", "mid", "high"))
+}
 
 # -----------------------------------------------------------------------------
 # Long format: one row per (respondent, endorsed domain) among family-cancer
@@ -117,9 +126,11 @@ strat_tab <- function(stratvar, levs) {
   }))
 }
 by_class   <- strat_tab("vclass", levels(long$vclass))
-by_famcare <- strat_tab("sf_cat", c("low", "mid", "high"))
 write.csv(by_class,   "outputs/phase3_by_class.csv",   row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(by_famcare, "outputs/phase3_by_famcare.csv", row.names = FALSE, fileEncoding = "UTF-8")
+if (HAS_SF) {
+  by_famcare <- strat_tab("sf_cat", c("low", "mid", "high"))
+  write.csv(by_famcare, "outputs/phase3_by_famcare.csv", row.names = FALSE, fileEncoding = "UTF-8")
+}
 
 # domain x class and domain x tertile detail
 detail <- do.call(rbind, lapply(names(ITEMS), function(it)
@@ -179,6 +190,7 @@ for (it in names(ITEMS)) {
   w("\n")
 }
 
+if (HAS_SF) {
 w("## 3. FAMCARE \u4e09\u5206\u4f4d\u5225\n\n")
 w("\u4e09\u5206\u4f4d\u306e\u5207\u65ad\u306f\u7b2c1\u8ad6\u6587\u3068\u540c\u4e00\uff08low %d / mid %d / high %d\uff09\u3002sf \u304c\u96e2\u6563\u548c\u306e\u305f\u3081\u5e45\u306f\u4e0d\u5747\u7b49\u3002\n\n",
   tt[["low"]], tt[["mid"]], tt[["high"]])
@@ -192,6 +204,7 @@ for (it in names(ITEMS)) {
       z$n_persons[i], z$n_responses[i], z$dec_pct[i], z$unc_pct[i],
       z$inc_pct[i], z$person_mean_inc_pct[i])
   w("\n")
+}
 }
 
 w("## \u51fa\u5178\n\n")

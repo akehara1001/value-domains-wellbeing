@@ -1,6 +1,8 @@
 data/
+data_release_v53.csv
 *.xlsx
 *.csv
+!codebook_v53.csv
 *.rds
 *.dta
 outputs/

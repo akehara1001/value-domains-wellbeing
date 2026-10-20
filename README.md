@@ -1,24 +1,26 @@
 # Number versus combination of endorsed value domains and well-being: a cross-sectional survey of Japanese households affected by cancer and disaster
 
-This repository holds the analysis code for the article "Number versus combination of endorsed value domains and well-being: a cross-sectional survey of Japanese households affected by cancer and disaster". It contains code only. The survey data, the fitted model objects and the questionnaire are not included.
+This repository holds the analysis code for the article "Number versus combination of endorsed value domains and well-being: a cross-sectional survey of Japanese households affected by cancer and disaster". It contains the code and the codebook of the analysis data file. The data file itself, the fitted model objects and the questionnaire are not included.
 
 ## Data
 
-The scripts expect the raw survey export at
+The scripts read the analysis data file at
 
-    data/data.xlsx
+    data/data_release_v53.csv
 
-It has two sheets: `data`, with 2179 rows and 177 columns of raw item codes, and `Format`, with the question wording and the value labels. The data are not public; where to send requests for access is given in the Data Availability Statement of the article.
+It has one row for each of the 2179 respondents and 92 columns: a serial number, the covariates, the K6 score, the seven well-being items, the nine value-domain selections and the routed ratings Q11_3 to Q11_9, each in the coding the models use. `codebook_v53.csv` in this repository describes every column. The data file is not in this repository; how to obtain it is given in the Data Availability Statement of the article.
+
+`00_derive.R` records how these variables were derived from the raw survey export (`data/data.xlsx`, sheets `data` and `Format`), which is not public. It is kept for that record and is not needed to run the analysis.
 
 Every script is run from the repository root (`BASE <- "."`). The scripts create `outputs/` and write the derived dataset, the model caches and all tables and figures there or in the root.
 
 ## Software
 
-R 4.5.1 with lavaan 0.6-21, poLCA 1.6.0.2, dplyr 1.1.4, readxl 1.4.5, car 3.1-3 and psych 2.6.3. Python 3.13 with matplotlib 3.10, Pillow 12.2 and python-docx 1.2. The full session record is in `sessionInfo.txt`.
+R 4.5.1 with lavaan 0.6-21, poLCA 1.6.0.2, dplyr 1.1.4, readxl 1.4.5 (for `00_derive.R` only), car 3.1-3 and psych 2.6.3. Python 3.13 with matplotlib 3.10, Pillow 12.2 and python-docx 1.2. The full session record is in `sessionInfo.txt`.
 
 ## Run order
 
-    Rscript 00_derive.R
+    Rscript 00_load_release.R
     Rscript 01_lca.R
     Rscript 02_structural.R 4 "Minimal,Relational-occupational,Family-health,Expansive"
     Rscript 03_value_change.R 4
@@ -32,7 +34,8 @@ R 4.5.1 with lavaan 0.6-21, poLCA 1.6.0.2, dplyr 1.1.4, readxl 1.4.5, car 3.1-3 
     python 05_figures_python.py
     python 06_model_diagrams.py
 
-- `00_derive.R` builds `values_analysis.rds` and runs a verification gate against the published description of the sample. Any failed check stops the script before anything is written.
+- `00_load_release.R` builds `values_analysis.rds` from `data/data_release_v53.csv`, adding the variables derived from it (the number of endorsed domains, income in three bands for Table 1, and the mean ratings across endorsed domains), and runs the checks of the verification gate of `00_derive.R` that the data file allows. Any failed check stops the script before anything is written. `00_derive.R` builds the same dataset from the raw export, with the FAMCARE-10 score and the panel key in addition.
+- `03_value_change.R` also tabulates the change ratings by FAMCARE-10 tertile when the FAMCARE-10 score is present. The data file does not carry it, so that tabulation is skipped; no table of the article uses it.
 - `01_lca.R` fits the one- to six-class latent class models with 100 random starts each. The full enumeration takes more than an hour. The fitted models are saved to `lca_models_raw.rds` as soon as fitting ends, and a later run with the same settings reuses that file.
 - `02_structural.R` needs the number of classes and their labels as arguments, and `03_value_change.R` needs the number of classes; neither chooses it. 02 fits an ordinal latent class model for a sensitivity check and caches it in `lca_ordinal_K4.rds`.
 - `06_breadth_group_ratios.R` must run before `07_reference_one_domain.R`, because both write `outputs/table21_firstorder_breadth_tests.csv` and the article uses the version written by 07.
@@ -57,8 +60,8 @@ All files are under `outputs/`. Figures are under `outputs/figures_plos/`, as TI
 | Fig 3 | 05_figures_python.py, `figure_endorsement()` | `Fig3.tif`, `Fig3_series.csv`, from `table2_class_profile.csv` and `table27_endorsement_rates.csv` |
 | Fig 4 | 05_figures_python.py, `figure_coefficients()` | `Fig4.tif`, `Fig4_series.csv`, from `table37_sd_units.csv`, `table38_sd_wb.csv`, `table22_breadth_ref1.csv` and `table31_disaster_group.csv` |
 | Table A in S1 Appendix | none | Questionnaire wording, compiled from the `Format` sheet of the raw export and the questionnaire draft, not by these scripts |
-| Table B in S1 Appendix | 00 (Panel A), 02 (Panel B) | `gate_00_derive.txt`, `table15_reliability.csv` |
-| Table C in S1 Appendix | 00 | the derivations in `00_derive.R`; `gate_00_derive.txt`, `domain_codebook.csv` |
+| Table B in S1 Appendix | 00 (Panel A), 02 (Panel B) | `gate_00_load_release.txt` or `gate_00_derive.txt`, `table15_reliability.csv` |
+| Table C in S1 Appendix | 00 | the derivations in `00_derive.R` and `codebook_v53.csv`; `gate_00_derive.txt` (every check, from the raw export) or `gate_00_load_release.txt` (the checks the data file allows), `domain_codebook.csv` |
 | Table D in S1 Appendix | 01 | `lca_fit_table.csv`, `lca_enumeration.md` |
 | Table E in S1 Appendix | 02 (Panel A), 07 (Panel B), 10 (SD units) | `table13_class_nsup_overlap.csv`, `results_phase2.md` (R-squared, overlap coefficient), `table28_class_given_breadth.csv`, `table28b_class_given_breadth_tests.csv`, `table37_sd_units.csv` |
 | Table F in S1 Appendix | 02, 10 (SD units) | `table10_breadth_matched.csv`, `table37_sd_units.csv` |
